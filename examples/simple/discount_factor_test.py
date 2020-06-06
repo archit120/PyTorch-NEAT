@@ -24,7 +24,7 @@ from pytorch_neat.recurrent_net import RecurrentNet
 
 max_env_steps = 200
 
-val_fitness
+
 def make_env():
     return gym.make("CartPole-v0")
 

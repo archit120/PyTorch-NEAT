@@ -122,6 +122,7 @@ class TensorBoardReporter(LogReporter):
         super().end_generation(config, population, species_set)
         for key, val in self.log_dict.items():
             self.tbx.add_scalar(key, val, self.log_dict['generation'])
+        self.tbx.flush()
 
     def found_solution(self, config, generation, best):
         self.tbx.close()
