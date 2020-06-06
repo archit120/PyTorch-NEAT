@@ -57,9 +57,9 @@ class DiscountEnvEvalator(MultiEnvEvaluator):
 
         for fs in fitnesses:
             lft = 0
-            for i, fts in enumerate(fs):
-                lft += math.pow(self.gamma, i) * fts
-            fitness += lft
+            gvs = np.arange(len(fs))
+            gvs = np.power(self.gamma, gvs)
+            fitness += np.sum(np.dot(gvs, np.array(fs)))
 
         genome.val_fitness = super().eval_genome(genome, config, debug=debug)
 
