@@ -4,7 +4,7 @@ This repo containts the requisite files for GA project of Archit Rungta and Shre
 
 ## Setup
 
-To setup it is first recommended to create a virtual env. Using Conda for example
+To setup it is first recommended to create a virtual env (you can skip). Using Conda for example
 ```
 $ conda create create --name=gap python=3.5
 $ conda activate gap

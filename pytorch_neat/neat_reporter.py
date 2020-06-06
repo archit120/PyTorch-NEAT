@@ -59,13 +59,28 @@ class LogReporter(BaseReporter):
     def post_evaluate(self, config, population, species, best_genome):
         # pylint: disable=no-self-use
         fitnesses = [c.fitness for c in population.values()]
+
         fit_mean = np.mean(fitnesses)
         fit_std = np.std(fitnesses)
+        self.log_dict["fitness_best"] = best_genome.fitness
+
+        try:
+            fitnesses = [c.val_fitness for c in population.values()]
+
+            self.log_dict["fitness_special_avg"] = fit_mean
+            self.log_dict["fitness_special_std"] = fit_std
+            self.log_dict["fitness_special_best"] = best_genome.fitness
+
+            self.log_dict["fitness_best"] = best_genome.val_fitness
+
+            fit_mean = np.mean(fitnesses)
+            fit_std = np.std(fitnesses)
+        except(Exception):
+            pass
 
         self.log_dict["fitness_avg"] = fit_mean
         self.log_dict["fitness_std"] = fit_std
 
-        self.log_dict["fitness_best"] = best_genome.fitness
 
         print("=" * 50 + " Best Genome: " + "=" * 50)
         if self.eval_with_debug:
@@ -75,6 +90,11 @@ class LogReporter(BaseReporter):
             best_genome, config, debug=self.eval_with_debug
         )
         self.log_dict["fitness_best_val"] = best_fitness_val
+        try:
+            self.log_dict["fitness_best_val"] = best_genome.val_fitness
+            self.log_dict["fitness_special_best_val"] = best_genome.fitness
+        except(Exception):
+            pass
 
         n_neurons_best, n_conns_best = best_genome.size()
         self.log_dict["n_neurons_best"] = n_neurons_best
