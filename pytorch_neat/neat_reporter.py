@@ -19,6 +19,7 @@ from pprint import pprint
 import numpy as np
 from neat.reporting import BaseReporter
 
+from tensorboardX import SummaryWriter
 
 class LogReporter(BaseReporter):
     def __init__(self, fnm, eval_best, eval_with_debug=False):
@@ -87,3 +88,25 @@ class LogReporter(BaseReporter):
 
     def species_stagnant(self, sid, species):
         pass
+
+# Copyright (c) 2020 Archit Rungta
+# This is a simple modification to enable logging to TensorBoard
+
+class TensorBoardReporter(LogReporter):
+
+    def __init__(self, tfnm, fnm, eval_best, eval_with_debug=False):
+        self.tbx = SummaryWriter(comment=tfnm)
+        super().__init__(fnm, eval_best, eval_with_debug=eval_with_debug)
+
+    def end_generation(self, config, population, species_set):
+        super().end_generation(config, population, species_set)
+        for key, val in self.log_dict.items():
+            self.tbx.add_scalar(key, val, self.log_dict['generation'])
+
+    def found_solution(self, config, generation, best):
+        self.tbx.close()
+        return super().found_solution(config, generation, best)
+
+    def species_stagnant(self, sid, species):
+        self.tbx.close()
+        return super().species_stagnant(sid, species)

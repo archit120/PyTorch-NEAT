@@ -1,3 +1,42 @@
+# Anaylsis of Policy Gradient Methods for Neuroevolution...
+
+This repo containts the requisite files for GA project of Archit Rungta and Shreyansh Darshan.
+
+## Setup
+
+To setup it is first recommended to create a virtual env. Using Conda for example
+```
+$ conda create create --name=gap python=3.5
+$ conda activate gap
+```
+
+Now follow these instructions.
+```
+$ pip install -r requirements.txt
+$ pip install -e .
+$ pip install tensorboardX
+```
+
+You can now run the samples. For example
+
+```
+$ python examples/simple/main_tensorboard.py
+```
+
+The output will be in the form of a tensorboard event file inside the runs folder. To view use this:
+
+```
+$ tensorboard --logdir=<path-to>/runs
+```
+
+
+---
+
+Information from upstream repository follow. Thanks to Uber-AI for making this possible.
+
+---
+
+
 # PyTorch NEAT
 
 ## Background
