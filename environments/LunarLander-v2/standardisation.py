@@ -43,7 +43,7 @@ def run(n_generations, batch_size, threads):
     pop.add_reporter(stats)
     reporter = neat.StdOutReporter(True)
     pop.add_reporter(reporter)
-    logger = TensorBoardReporter("%s-vanilla-%s-batch" % (env_name, str(batch_size)), "neat3.log", evaluator.eval_genome)
+    logger = TensorBoardReporter("%s-standardise-%s-batch" % (env_name, str(batch_size)), "neat3.log", evaluator.eval_genome)
     pop.add_reporter(logger)
 
     peval = neat.ParallelEvaluator(threads, eval_genomes)

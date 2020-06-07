@@ -17,9 +17,8 @@ import math
 from pytorch_neat.multi_env_eval import MultiEnvEvaluator
 
 
-class RewardtogoEnvEvaluator(MultiEnvEvaluator):
+class RewardToGoEnvEvaluator(MultiEnvEvaluator):
     def __init__(self, make_net, activate_net, batch_size=1, max_env_steps=None, make_env=None, envs=None):
-        # self.gamma = gamma
         super().__init__(make_net, activate_net, batch_size=batch_size, max_env_steps=max_env_steps, make_env=make_env, envs=envs)
 
     def eval_genome(self, genome, config, debug=False):
@@ -31,7 +30,7 @@ class RewardtogoEnvEvaluator(MultiEnvEvaluator):
 
         states = [env.reset() for env in self.envs]
         dones = [False] * self.batch_size
-
+        val_fitness = 0
         step_num = 0
         while True:
             step_num += 1
@@ -47,6 +46,7 @@ class RewardtogoEnvEvaluator(MultiEnvEvaluator):
                 if not done:
                     state, reward, done, _ = env.step(action)
                     fitnesses[i].append(reward)
+                    val_fitness += reward
                     if not done:
                         states[i] = state
                     dones[i] = done
@@ -55,13 +55,10 @@ class RewardtogoEnvEvaluator(MultiEnvEvaluator):
 
         fitness = 0
 
-        for j, fs in enumerate(fitnesses):
-            lft = 0
-            for i, fts in enumerate(fs):
-                if (i >= j):
-                    lft += fts
-            fitness += lft
+        for fs in fitnesses:
+            for j,i in enumerate(fs):
+                fitness += i*(j+1)/len(fs)
 
-        genome.val_fitness = super().eval_genome(genome, config, debug=debug)
+        genome.val_fitness = val_fitness/self.batch_size
 
-        return fitness / len(fitnesses)
+        return fitness / self.batch_size
