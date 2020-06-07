@@ -45,7 +45,7 @@ class DiscountEnvEvaluator(MultiEnvEvaluator):
                 if not done:
                     state, reward, done, _ = env.step(action)
                     val_fitness += reward
-                    fitness += reward*math.pow(self.gamma, i)
+                    fitness += reward*math.pow(self.gamma, step_num-1)
                     if not done:
                         states[i] = state
                     dones[i] = done
