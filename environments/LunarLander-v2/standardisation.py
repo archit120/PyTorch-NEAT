@@ -30,7 +30,7 @@ def run(n_generations, batch_size, threads):
         config_path,
     )
 
-    evaluator = StandardEnvEvalator(
+    evaluator = StandardEnvEvaluator(
         make_net, activate_net, make_env=make_env, max_env_steps=max_env_steps
     )
 

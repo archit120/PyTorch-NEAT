@@ -18,7 +18,7 @@ from pytorch_neat.multi_env_eval import MultiEnvEvaluator
 
 
 class StandardEnvEvaluator(MultiEnvEvaluator):
-    def __init__(self, make_net, activate_net, max_rewards=1000000, batch_size=1, max_env_steps=None, make_env=None, envs=None):
+    def __init__(self, make_net, activate_net, max_rewards=100000, batch_size=1, max_env_steps=None, make_env=None, envs=None):
 
         self.max_rewards = max_rewards
         self.all_rewards = np.zeros((max_rewards))
@@ -30,8 +30,9 @@ class StandardEnvEvaluator(MultiEnvEvaluator):
 
         cmean = 0
         std = 1
+        # print(self.reward_idx)
         if self.reward_idx >= self.max_rewards:
-            print("Standardisation active now")
+            # print("Standardisation active now")
             cmean = np.mean(self.all_rewards)
             std = np.std(self. all_rewards)
 
@@ -56,7 +57,7 @@ class StandardEnvEvaluator(MultiEnvEvaluator):
                 if not done:
                     state, reward, done, _ = env.step(action)
                     self.all_rewards[(self.reward_idx+1)%self.max_rewards] = reward
-                    self.reward_idx = self.reward_idx+1
+                    self.reward_idx += 1
 
                     fitness += (reward-cmean)/std
                     val_fitness += reward
