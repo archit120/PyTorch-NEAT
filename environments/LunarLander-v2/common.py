@@ -23,6 +23,7 @@ from pytorch_neat.standardise_eval import StandardEnvEvaluator
 from pytorch_neat.multi_env_eval import MultiEnvEvaluator
 from pytorch_neat.neat_reporter import TensorBoardReporter
 from pytorch_neat.recurrent_net import RecurrentNet
+from pytorch_neat.rewardtogo_eval import RewardToGoEnvEvaluator
 
 max_env_steps = 1000000
 
