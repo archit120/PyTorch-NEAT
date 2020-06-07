@@ -24,7 +24,6 @@ class DiscountEnvEvaluator(MultiEnvEvaluator):
 
     def eval_genome(self, genome, config, debug=False):
         net = self.make_net(genome, config, self.batch_size)
-        s
         fitness = 0
         val_fitness = 0
 
@@ -46,7 +45,7 @@ class DiscountEnvEvaluator(MultiEnvEvaluator):
                 if not done:
                     state, reward, done, _ = env.step(action)
                     val_fitness += reward
-                    fitness += reward*math.pow(gamma, i)
+                    fitness += reward*math.pow(self.gamma, i)
                     if not done:
                         states[i] = state
                     dones[i] = done
