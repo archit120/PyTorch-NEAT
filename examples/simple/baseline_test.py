@@ -12,10 +12,35 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 
-from common import *
+import os
+
+import click
+import gym
+import neat
+
+from pytorch_neat.discount_factor_eval import DiscountEnvEvalator
+from pytorch_neat.neat_reporter import TensorBoardReporter
+from pytorch_neat.recurrent_net import RecurrentNet
+
+max_env_steps = 200
+
+
+
+def make_env():
+    return gym.make("CartPole-v0")
+
+
+def make_net(genome, config, bs):
+    return RecurrentNet.create(genome, config, bs)
+
+
+def activate_net(net, states):
+    outputs = net.activate(states).numpy()
+    return outputs[:, 0] > 0.5
+
 
 @click.command()
-@click.option("--n_generations", type=int, default=1000)
+@click.option("--n_generations", type=int, default=100)
 def run(n_generations):
     # Load the config file, which is assumed to live in
     # the same directory as this script.
@@ -28,8 +53,8 @@ def run(n_generations):
         config_path,
     )
 
-    evaluator = StandardEnvEvalator(
-        make_net, activate_net, make_env=make_env, max_env_steps=max_env_steps
+    evaluator = DiscountEnvEvalator(
+        make_net, activate_net, 0.95, make_env=make_env, max_env_steps=max_env_steps
     )
 
     def eval_genomes(genomes, config):
@@ -41,7 +66,7 @@ def run(n_generations):
     pop.add_reporter(stats)
     reporter = neat.StdOutReporter(True)
     pop.add_reporter(reporter)
-    logger = TensorBoardReporter("%s-discount" % env_name, "neat2.log", evaluator.eval_genome)
+    logger = TensorBoardReporter("CartPole-v0-discount", "neat.log", evaluator.eval_genome)
     pop.add_reporter(logger)
 
     pop.run(eval_genomes, n_generations)

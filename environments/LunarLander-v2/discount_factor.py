@@ -37,7 +37,7 @@ def run(n_generations, batch_size, threads):
     reporter = neat.StdOutReporter(True)
     pop.add_reporter(reporter)
 
-    evaluator = DiscountEnvEvalator(
+    evaluator = DiscountEnvEvaluator(
         make_net, activate_net, 0.99, batch_size = batch_size, make_env=make_env, max_env_steps=max_env_steps
     )
 

@@ -17,17 +17,17 @@ import math
 from pytorch_neat.multi_env_eval import MultiEnvEvaluator
 
 
-class DiscountEnvEvaluator(MultiEnvEvaluator):
-    def __init__(self, make_net, activate_net, gamma, batch_size=1, max_env_steps=None, make_env=None, envs=None):
-        self.gamma = gamma
+class BaselineEnvEvaluator(MultiEnvEvaluator):
+    def __init__(self, make_net, activate_net, baseline_net, gamma, batch_size=1, max_env_steps=None, make_env=None, envs=None):
+        # baseline_net must by a pytorch model that takes state vector and outputs a number
+        self.baseline_net = baseline_net
+
         super().__init__(make_net, activate_net, batch_size=batch_size, max_env_steps=max_env_steps, make_env=make_env, envs=envs)
 
     def eval_genome(self, genome, config, debug=False):
-        net = self.make_net(genome, config, self.batch_size)
-        s
-        fitness = 0
-        val_fitness = 0
+        net = self.make_net(genome[0], config, self.batch_size)
 
+        fitnesses = np.zeros(self.batch_size)
         states = [env.reset() for env in self.envs]
         dones = [False] * self.batch_size
 
@@ -45,14 +45,13 @@ class DiscountEnvEvaluator(MultiEnvEvaluator):
             for i, (env, action, done) in enumerate(zip(self.envs, actions, dones)):
                 if not done:
                     state, reward, done, _ = env.step(action)
-                    val_fitness += reward
-                    fitness += reward*math.pow(gamma, i)
+                    fitnesses[i] += reward - self.e
                     if not done:
                         states[i] = state
                     dones[i] = done
             if all(dones):
                 break
 
-        genome.val_fitness = val_fitness/self.batch_size
+        genome.val_fitness = super().eval_genome(genome, config, debug=debug)
 
-        return fitness/self.batch_size
+        return sum(fitnesses) / len(fitnesses)

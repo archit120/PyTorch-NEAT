@@ -18,19 +18,25 @@ from pytorch_neat.multi_env_eval import MultiEnvEvaluator
 
 
 class StandardEnvEvaluator(MultiEnvEvaluator):
-    def __init__(self, make_net, activate_net, max_rewards, batch_size=1, max_env_steps=None, make_env=None, envs=None):
-        
-        self.all_rewards = []
+    def __init__(self, make_net, activate_net, max_rewards=1000000, batch_size=1, max_env_steps=None, make_env=None, envs=None):
+
         self.max_rewards = max_rewards
+        self.all_rewards = np.zeros((max_rewards))
         self.reward_idx = 0
         super().__init__(make_net, activate_net, batch_size=batch_size, max_env_steps=max_env_steps, make_env=make_env, envs=envs)
 
     def eval_genome(self, genome, config, debug=False):
         net = self.make_net(genome, config, self.batch_size)
 
-        fitnesses = []
-        for _ in range(self.batch_size):
-            fitnesses.append([])
+        cmean = 0
+        std = 1
+        if self.reward_idx >= self.max_rewards:
+            print("Standardisation active now")
+            cmean = np.mean(self.all_rewards)
+            std = np.std(self. all_rewards)
+
+        fitness = 0
+        val_fitness = 0
 
         states = [env.reset() for env in self.envs]
         dones = [False] * self.batch_size
@@ -49,41 +55,18 @@ class StandardEnvEvaluator(MultiEnvEvaluator):
             for i, (env, action, done) in enumerate(zip(self.envs, actions, dones)):
                 if not done:
                     state, reward, done, _ = env.step(action)
-                    fitnesses[i].append(reward)
+                    self.all_rewards[(self.reward_idx+1)%self.max_rewards] = reward
+                    self.reward_idx = self.reward_idx+1
+
+                    fitness += (reward-cmean)/std
+                    val_fitness += reward
+
                     if not done:
                         states[i] = state
                     dones[i] = done
             if all(dones):
                 break
 
-        fitness = 0
+        genome.val_fitness = val_fitness/self.batch_size
 
-        try:
-            for fs in fitnesses:
-                for fts in fs:
-                    if (self.reward_idx < self.max_rewards):
-                        self.all_rewards.append(fts)
-                    else:
-                        self.all_rewards[self.reward_idx % self.max_rewards] = fts
-                    self.reward_idx += 1
-        except MemoryError as error:
-            # Output expected MemoryErrors.
-            print(error)
-        except Exception as exception:
-            # Output unexpected Exceptions.
-            print(exception, False)
-
-        meanfitness = np.mean(self.all_rewards)
-        stdfitness = np.std(self.all_rewards)
-
-        for fs in fitnesses:
-            lft = 0
-            for i, fts in enumerate(fs):
-                lft += (fts - meanfitness)/stdfitness
-            fitness += lft
-        
-        # print (self.reward_idx)
-
-        genome.val_fitness = super().eval_genome(genome, config, debug=debug)
-
-        return fitness / len(fitnesses)
+        return fitness / self.batch_size
