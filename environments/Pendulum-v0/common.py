@@ -18,7 +18,9 @@ import click
 import gym
 import neat
 import numpy as np
-from pytorch_neat.discount_factor_eval import DiscountEnvEvalator
+from pytorch_neat.discount_factor_eval import DiscountEnvEvaluator
+from pytorch_neat.standardise_eval import StandardEnvEvaluator
+from pytorch_neat.rewardtogo_eval import RewardtogoEnvEvaluator
 from pytorch_neat.multi_env_eval import MultiEnvEvaluator
 from pytorch_neat.neat_reporter import TensorBoardReporter
 from pytorch_neat.recurrent_net import RecurrentNet

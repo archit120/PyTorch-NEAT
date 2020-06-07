@@ -28,7 +28,7 @@ def run(n_generations):
         config_path,
     )
 
-    evaluator = DiscountEnvEvaluator(
+    evaluator = StandardEnvEvalator(
         make_net, activate_net, 0.99, make_env=make_env, max_env_steps=max_env_steps
     )
 

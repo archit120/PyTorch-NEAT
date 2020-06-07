@@ -17,9 +17,9 @@ import math
 from pytorch_neat.multi_env_eval import MultiEnvEvaluator
 
 
-class DiscountEnvEvaluator(MultiEnvEvaluator):
-    def __init__(self, make_net, activate_net, gamma, batch_size=1, max_env_steps=None, make_env=None, envs=None):
-        self.gamma = gamma
+class RewardtogoEnvEvaluator(MultiEnvEvaluator):
+    def __init__(self, make_net, activate_net, batch_size=1, max_env_steps=None, make_env=None, envs=None):
+        # self.gamma = gamma
         super().__init__(make_net, activate_net, batch_size=batch_size, max_env_steps=max_env_steps, make_env=make_env, envs=envs)
 
     def eval_genome(self, genome, config, debug=False):
@@ -55,10 +55,12 @@ class DiscountEnvEvaluator(MultiEnvEvaluator):
 
         fitness = 0
 
-        for fs in fitnesses:
-            gvs = np.arange(len(fs))
-            gvs = np.power(self.gamma, gvs)
-            fitness += np.sum(np.dot(gvs, np.array(fs)))
+        for j, fs in enumerate(fitnesses):
+            lft = 0
+            for i, fts in enumerate(fs):
+                if (i >= j):
+                    lft += fts
+            fitness += lft
 
         genome.val_fitness = super().eval_genome(genome, config, debug=debug)
 

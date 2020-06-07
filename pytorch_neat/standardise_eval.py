@@ -17,9 +17,12 @@ import math
 from pytorch_neat.multi_env_eval import MultiEnvEvaluator
 
 
-class DiscountEnvEvaluator(MultiEnvEvaluator):
-    def __init__(self, make_net, activate_net, gamma, batch_size=1, max_env_steps=None, make_env=None, envs=None):
-        self.gamma = gamma
+class StandardEnvEvaluator(MultiEnvEvaluator):
+    def __init__(self, make_net, activate_net, max_rewards, batch_size=1, max_env_steps=None, make_env=None, envs=None):
+        
+        self.all_rewards = []
+        self.max_rewards = max_rewards
+        self.reward_idx = 0
         super().__init__(make_net, activate_net, batch_size=batch_size, max_env_steps=max_env_steps, make_env=make_env, envs=envs)
 
     def eval_genome(self, genome, config, debug=False):
@@ -55,10 +58,31 @@ class DiscountEnvEvaluator(MultiEnvEvaluator):
 
         fitness = 0
 
+        try:
+            for fs in fitnesses:
+                for fts in fs:
+                    if (self.reward_idx < self.max_rewards):
+                        self.all_rewards.append(fts)
+                    else:
+                        self.all_rewards[self.reward_idx % self.max_rewards] = fts
+                    self.reward_idx += 1
+        except MemoryError as error:
+            # Output expected MemoryErrors.
+            print(error)
+        except Exception as exception:
+            # Output unexpected Exceptions.
+            print(exception, False)
+
+        meanfitness = np.mean(self.all_rewards)
+        stdfitness = np.std(self.all_rewards)
+
         for fs in fitnesses:
-            gvs = np.arange(len(fs))
-            gvs = np.power(self.gamma, gvs)
-            fitness += np.sum(np.dot(gvs, np.array(fs)))
+            lft = 0
+            for i, fts in enumerate(fs):
+                lft += (fts - meanfitness)/stdfitness
+            fitness += lft
+        
+        # print (self.reward_idx)
 
         genome.val_fitness = super().eval_genome(genome, config, debug=debug)
 
