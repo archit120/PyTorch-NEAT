@@ -1,3 +1,5 @@
+# Copyright (c) 2020 Archit Rungta
+
 # Copyright (c) 2018 Uber Technologies, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,36 +14,12 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 
-import os
-
-import click
-import gym
-import neat
-
-from pytorch_neat.multi_env_eval import MultiEnvEvaluator
-from pytorch_neat.neat_reporter import TensorBoardReporter
-from pytorch_neat.recurrent_net import RecurrentNet
-
-max_env_steps = 200
-
-env_name = "CartPole-v1"
-
-def make_env():
-    return gym.make(env_name)
-
-
-def make_net(genome, config, bs):
-    return RecurrentNet.create(genome, config, bs)
-
-
-def activate_net(net, states):
-    outputs = net.activate(states).numpy()
-    return outputs[:, 0] > 0.5
-
+from common import *
 
 @click.command()
-@click.option("--n_generations", type=int, default=100)
-def run(n_generations):
+@click.option("--n_generations", type=int, default=1000)
+@click.option("--batch_size", type=int, default=1)
+def run(n_generations, batch_size):
     # Load the config file, which is assumed to live in
     # the same directory as this script.
     config_path = os.path.join(os.path.dirname(__file__), "neat.cfg")
@@ -54,7 +32,7 @@ def run(n_generations):
     )
 
     evaluator = MultiEnvEvaluator(
-        make_net, activate_net, make_env=make_env, max_env_steps=max_env_steps
+        make_net, activate_net, batch_size=batch_size, make_env=make_env, max_env_steps=max_env_steps
     )
 
     def eval_genomes(genomes, config):
@@ -66,7 +44,7 @@ def run(n_generations):
     pop.add_reporter(stats)
     reporter = neat.StdOutReporter(True)
     pop.add_reporter(reporter)
-    logger = TensorBoardReporter(env_name, "neat.log", evaluator.eval_genome)
+    logger = TensorBoardReporter("%s-vanilla-%s-batch" % (env_name, str(batch_size)), "neat.log", evaluator.eval_genome)
     pop.add_reporter(logger)
 
     pop.run(eval_genomes, n_generations)

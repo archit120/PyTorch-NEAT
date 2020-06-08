@@ -50,7 +50,6 @@ def run(n_generations, batch_size, threads):
 
     pop.run(peval.eval_function, n_generations)
 
-    pop.run(eval_genomes, n_generations)
 
 
 if __name__ == "__main__":
