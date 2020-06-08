@@ -16,7 +16,9 @@ from common import *
 
 @click.command()
 @click.option("--n_generations", type=int, default=1000)
-def run(n_generations):
+@click.option("--batch_size", type=int, default=1)
+@click.option("--threads", type=int, default=1)
+def run(n_generations, batch_size, threads):
     # Load the config file, which is assumed to live in
     # the same directory as this script.
     config_path = os.path.join(os.path.dirname(__file__), "neat.cfg")
@@ -29,7 +31,7 @@ def run(n_generations):
     )
 
     evaluator = StandardEnvEvaluator(
-        make_net, activate_net, 1000000, make_env=make_env, max_env_steps=max_env_steps
+        make_net, activate_net, make_env=make_env, max_env_steps=max_env_steps
     )
 
     def eval_genomes(genomes, config):
@@ -41,8 +43,12 @@ def run(n_generations):
     pop.add_reporter(stats)
     reporter = neat.StdOutReporter(True)
     pop.add_reporter(reporter)
-    logger = TensorBoardReporter("%s-standardise" % env_name, "neat2.log", evaluator.eval_genome)
+    logger = TensorBoardReporter("%s-standardise-%s-batch" % (env_name, str(batch_size)), "neat3.log", evaluator.eval_genome)
     pop.add_reporter(logger)
+
+    peval = neat.ParallelEvaluator(threads, eval_genomes)
+
+    pop.run(peval.eval_function, n_generations)
 
     pop.run(eval_genomes, n_generations)
 
